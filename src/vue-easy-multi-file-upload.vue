@@ -57,7 +57,34 @@
 
 <script>
 import Vue from "vue";
-import { determineFileTypeByExt } from "./util";
+
+const determineFileTypeByExt = (ext) => {
+  const TYPES_DICT = {
+    web: "css less scss wasm ",
+    audio:
+      "aac aiff ape au flac gsm it m3u m4a mid mod mp3 mpa pls ra s3m sid wav wma xm ",
+    code:
+      "c cc class clj cpp cs cxx el go h java lua m m4 php pl po py rb rs swift vb vcxproj xcodeproj xml diff patch html js ",
+    slide: "ppt odp ",
+    sheet: "ods xls xlsx csv ics vcf ",
+    image:
+      "3dm 3ds max bmp dds gif jpg jpeg png psd xcf tga thm tif tiff ai eps ps svg dwg dxf gpx kml kmz webp ",
+    archiv:
+      "7z a apk ar bz2 cab cpio deb dmg egg gz iso jar lha mar pea rar rpm s7z shar tar tbz2 tgz tlz war whl xpi zip zipx xz pak ",
+    book: "mobi epub azw1 azw3 azw4 azw6 azw cbr cbz ",
+    text:
+      "doc docx ebook log md msg odt org pages pdf rtf rst tex txt wpd wps ",
+    exec: "exe msi bin command sh bat crx ",
+    font: "eot otf ttf woff woff2 ",
+    video:
+      "3g2 3gp aaf asf avchd avi drc flv m2v m4p m4v mkv mng mov mp2 mp4 mpe mpeg mpg mpv mxf nsv ogg ogv ogm qt rm rmvb roq srt svi vob webm wmv yuv ",
+  };
+  let TYPE = "other";
+  Object.keys(TYPES_DICT).forEach((type) => {
+    if (TYPES_DICT[type].split(" ").includes(ext)) TYPE = type;
+  });
+  return TYPE;
+};
 
 export default {
   name: "VueEasyMultiFileUpload",
@@ -70,7 +97,7 @@ export default {
       config_: {
         id: "multi-file-uploader",
         label: "Upload a file",
-        uploadingMessage: "Uploading...",
+        uploadingMessage: "Loading...",
         maxFiles: null,
         uploadUrl: null,
         deleteUrl: null,
@@ -82,7 +109,7 @@ export default {
         style: null,
         allowExt: ["jpg", "png", "gif", "mp4", "txt", "pdf"],
         maxSize: null,
-        // delimiter: null,
+        delimiter: null,
       },
       files: null,
       activeIndex: null,
@@ -94,11 +121,9 @@ export default {
       Object.keys(this.config_).forEach((key) => {
         if (this.config[key]) Vue.set(this.config_, key, this.config[key]);
       });
-      this.files = Array(this.config_.maxFiles);
       this.processValueProp(this.value);
     }
   },
-
   methods: {
     handleFileListItemClick(index, mode) {
       // mode => true: create, false: delete
@@ -109,7 +134,6 @@ export default {
         this.$refs.fileInput.click();
       } else this.deleteFile(index);
     },
-
     deleteFile(index) {
       if (confirm("Are you sure you want to delete?")) {
         if (!this.config.deleteUrl) {
@@ -139,7 +163,6 @@ export default {
           });
       }
     },
-
     update() {
       let paths = this.files
         // .filter((f) => (f ? true : false))
@@ -150,10 +173,8 @@ export default {
       this.$emit("input", valueToEmit);
       this.$refs.fileInput.value = null; // clear fileInput
     },
-
     handleFileChange(e) {
       let file = e.target.files.item(0);
-
       // validate file
       const { name: fileName, size: fileSize } = file;
       const fileExt = fileName.split(".").pop();
@@ -164,13 +185,11 @@ export default {
         alert("file size too large");
         return;
       }
-
       Vue.set(this.files, this.activeIndex, {
         loading: true,
         url: null,
         type: determineFileTypeByExt(fileExt),
       });
-
       // upload file
       var formData = new FormData();
       formData.append(this.config_.uploadFieldName, file);
@@ -199,9 +218,12 @@ export default {
           this.update();
         });
     },
-
     processValueProp(val) {
-      if (!val) return;
+      if (!val) {
+        this.files = Array(this.config_.maxFiles);
+        return;
+      }
+
       if (typeof val == "string") val = val.split(this.config.delimiter);
       val.forEach((v, i) => {
         if (v)
@@ -213,10 +235,9 @@ export default {
       });
     },
   },
-
   watch: {
     value: function (newVal, oldVal) {
-      if (newVal && newVal + "" !== oldVal + "") {
+      if (newVal + "" !== oldVal + "") {
         this.processValueProp(newVal);
       }
     },
