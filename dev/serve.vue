@@ -11,20 +11,24 @@ export default Vue.extend({
     return {
       config: {
         id: "multi-file-uploader",
-        // label: "Upload your files",
+        label: "Upload your files",
         maxFiles: 6,
         uploadUrl: "http://localhost:8005/api/common/assets/fd",
         deleteUrl: "http://localhost:8005/api/common/assets/",
         uploadHttpMethod: "POST",
         deleteHttpMethod: "DELETE",
+        uploadFieldName: "file",
+        deleteFieldName: "filePath",
         Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MjIyOTM2NDQsImRhdGEiOnsicGhvbmVObyI6Iis5Nzc5ODQzNDE4MzAwIiwicm9sZSI6InVzZXIifSwiaWF0IjoxNjIyMjA3MjQ0fQ.jNhTOhjM-QRhZIWMsVXWAUDfFA-lE-HzydmknTMXF9E",
-        width: "90px",
-        height: "75px",
-        allowExt: ["jpg", "png", "gif", "mp4"],
-        fileType: "image", // image, video, other
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MjI1MzA5OTQsImRhdGEiOnsicm9sZSI6ImFkbWluIn0sImlhdCI6MTYyMjQ0NDU5NH0.F8-ZWUnOxgVfmgv43xeCiYu937xnRm0mhQJfbG-piZI",
+       style: {
+          width: "150px",
+          height: "200px",
+        },
+        allowExt: ["jpg", "png", "gif", "mp4", "txt"],
+        fileType: "image",
         maxSize: 5,
-        // delimiter: "|",
+        delimiter: "|",
       },
 
       values: null,
@@ -35,8 +39,6 @@ export default Vue.extend({
 
 <template>
   <div id="app">
-    <vue-easy-multi-file-upload :config="config" />
-
-    {{ values }}
+    <vue-easy-multi-file-upload :config="config" v-model="values" />
   </div>
 </template>

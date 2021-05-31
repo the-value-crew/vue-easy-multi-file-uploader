@@ -1,6 +1,6 @@
 module.exports = {
     themeConfig: {
       search: false,
-      repo: 'vuejs/vuepress',
+      repo: '/the-value-crew/vue-easy-multi-file-uploader',
     }
   }
