@@ -1,6 +1,8 @@
 # vue-easy-multi-file-uploader
 
-File uploading made easy for vueJs. The package is currently available for Vue 2 only.
+File uploading made easy for vueJs. The package is currently available for Vue 2 only. Will soon be available for Vue 3.
+
+> Please use the latest version.
 
 ![Snapshot!](https://raw.githubusercontent.com/the-value-crew/vue-easy-multi-file-uploader/master/docs/assets/img/snapshot.fd19a490.png)
 
