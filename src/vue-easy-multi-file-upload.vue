@@ -63,8 +63,7 @@ const determineFileTypeByExt = (ext) => {
     web: "css less scss wasm",
     audio:
       "aac aiff ape au flac gsm it m3u m4a mid mod mp3 mpa pls ra s3m sid wav wma xm",
-    code:
-      "c cc class clj cpp cs cxx el go h java lua m m4 php pl po py rb rs swift vb vcxproj xcodeproj xml diff patch html js",
+    code: "c cc class clj cpp cs cxx el go h java lua m m4 php pl po py rb rs swift vb vcxproj xcodeproj xml diff patch html js",
     slide: "ppt odp ",
     sheet: "ods xls xlsx csv ics vcf",
     image:
@@ -109,6 +108,7 @@ export default {
         allowExt: ["jpg", "png", "gif", "mp4", "txt", "pdf"],
         maxSize: null,
         delimiter: null,
+        customValidator: null,
       },
       files: null,
       activeIndex: null,
@@ -172,18 +172,29 @@ export default {
       this.$emit("input", valueToEmit);
       this.$refs.fileInput.value = null; // clear fileInput
     },
-    handleFileChange(e) {
+    async handleFileChange(e) {
       let file = e.target.files.item(0);
       // validate file
       const { name: fileName, size: fileSize } = file;
       const fileExt = fileName.split(".").pop();
-      if (!this.config_.allowExt.includes(fileExt)) {
-        alert("file type not allowed");
-        return;
-      } else if (fileSize > this.config_.maxSize * 1024 * 1024) {
-        alert("file size too large");
+      let error = null;
+      if (!this.config_.allowExt.includes(fileExt))
+        error = "file type not allowed";
+      else if (fileSize > this.config_.maxSize * 1024 * 1024)
+        error = "file size too large";
+      else if (this.config_.customValidator) {
+        try {
+          await this.config_.customValidator(file);
+        } catch (e) {
+          error = e.message;
+        }
+      }
+
+      if (error) {
+        alert(error);
         return;
       }
+
       Vue.set(this.files, this.activeIndex, {
         loading: true,
         url: null,

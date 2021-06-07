@@ -1,6 +1,6 @@
 # vue-easy-multi-file-uploader
 
-File uploading made easy for vueJs. The package is currently available for Vue 2 only. Will soon be available for Vue 3.
+File uploading made easy for vueJs. Custom validators, custom styling, file preview support for image & videos...
 
 > Please use the latest version.
 
@@ -48,6 +48,14 @@ export default {
         allowExt: ["jpg", "png", "gif", "mp4", "txt", "webm", "pdf"],
         maxSize: 5,
         delimiter: "|",
+        customValidator: (file) => {
+          // ... custom validation logic ...
+          return {
+            status: true, // or false
+            message: "It passes validation" // or null
+          }
+          // Tip: function can be async, can also return promise
+        }
       },
       values: null
     };
@@ -77,8 +85,9 @@ There is only one prop i.e. ***config***. Fields marked with ***asterisk(\*)*** 
 | style              | Custom style for file upload section. Accepts style in plain [string or object](https://vuejs.org/v2/guide/class-and-style.html#Object-Syntax-1) |                                                  |
 | delimiter          | If delimiter is specified, a single string containing file paths seperated by delimeter is returned. eg: pipes, comma                                                                                                                                                                       |                                                  |
 | id                 | Id of parent element                                                                                                                                                                                                                                                                        | `multi-file-uploader`                          |
+| customValidator | Custom validation for uploaded file before sending it to server. View example above. | 
 ## Events
 
-| Name   | Description                                                 | Required |
-| ------ | ----------------------------------------------------------- | -------- |
-| @input | Fired when new file is uploaded or existing file is deleted |          |
+| Name   | Description                                                 | 
+| ------ | ----------------------------------------------------------- | 
+| @input | Fired when new file is uploaded or existing file is deleted |
