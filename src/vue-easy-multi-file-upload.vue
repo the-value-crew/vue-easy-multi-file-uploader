@@ -33,7 +33,7 @@
             <img v-if="files[index].type == 'image'" :src="files[index].url" />
 
             <!-- Video -->
-            <video v-else-if="files[index].type == 'video'" loop controls>
+            <video v-else-if="files[index].type == 'video'" loop controls :src="files[index].url">
               <source :src="files[index].url" />
               Your browser does not support the video tag.
             </video>
@@ -79,7 +79,7 @@ const determineFileTypeByExt = (ext) => {
   };
   let TYPE = "other";
   Object.keys(TYPES_DICT).forEach((type) => {
-    if (TYPES_DICT[type].split(" ").includes(ext)) TYPE = type;
+    if (TYPES_DICT[type].split(" ").includes(ext.toLowerCase())) TYPE = type;
   });
   return TYPE;
 };
@@ -176,7 +176,9 @@ export default {
       let file = e.target.files.item(0);
       // validate file
       const { name: fileName, size: fileSize } = file;
-      const fileExt = fileName.split(".").pop();
+      let fileExt = fileName.split(".").pop();
+      if(fileExt) fileExt = fileExt.toLowerCase();
+
       let error = null;
       if (!this.config_.allowExt.includes(fileExt))
         error = "file type not allowed";

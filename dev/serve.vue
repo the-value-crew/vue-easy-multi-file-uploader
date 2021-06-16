@@ -41,38 +41,9 @@ export default Vue.extend({
           width: "150px",
           height: "175px",
         },
-        allowExt: ["jpg", "png", "gif", "mp4"],
-        maxSize: 5,
-        delimiter: "|",
-        customValidator: async (file) => {
-          return new Promise((resolve, reject) => {
-            let ext = file.name.split(".").pop();
-            if (["mp4", "webm"].includes(ext)) {
-              var video = document.createElement("video");
-              video.preload = "metadata";
-
-              video.onloadedmetadata = function () {
-                window.URL.revokeObjectURL(video.src);
-
-                console.log(video.duration);
-
-                if (video.duration >= 3 && video.duration <= 10)
-                  resolve({ status: true });
-                else
-                  reject({
-                    status: false,
-                    message: "Video duration must me 3-10 seconds",
-                  });
-              };
-
-              video.src = URL.createObjectURL(file);
-            } else
-              reject({
-                status: false,
-                message: "File must be a video with extensions: mp4, webm",
-              });
-          });
-        },
+        allowExt: ["jpg", "png", "gif", "mp4", "mov"],
+        maxSize: 50,
+        delimiter: "|"
       },
 
       values: "asdasd.sad",
