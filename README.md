@@ -86,6 +86,8 @@ There is only one prop i.e. ***config***. Fields marked with ***asterisk(\*)*** 
 | delimiter          | If delimiter is specified, a single string containing file paths seperated by delimeter is returned. eg: pipes, comma                                                                                                                                                                       |                                                  |
 | id                 | Id of parent element                                                                                                                                                                                                                                                                        | `multi-file-uploader`                          |
 | customValidator | Custom validation for uploaded file before sending it to server. View example above. | 
+| compress | Compress images. Uses compressorjs | false |
+|compressorOptions | Compressorjs options. View [compressorjs](https://github.com/fengyuanchen/compressorjs) for more details | null
 ## Events
 
 | Name   | Description                                                 | 

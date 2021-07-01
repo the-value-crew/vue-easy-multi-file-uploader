@@ -20,7 +20,7 @@ export default Vue.extend({
         uploadFieldName: "file",
         deleteFieldName: "filePath",
         Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MjI1MzA5OTQsImRhdGEiOnsicm9sZSI6ImFkbWluIn0sImlhdCI6MTYyMjQ0NDU5NH0.F8-ZWUnOxgVfmgv43xeCiYu937xnRm0mhQJfbG-piZI",
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MjUxOTYxMTYsImRhdGEiOnsicm9sZSI6ImFkbWluIn0sImlhdCI6MTYyNTEwOTcxNn0.aJ6Cvq-flB0AfneDwloRQQQC8OfaSJo2wVHS_AyU1YQ",
         style: {
           width: "150px",
           height: "200px",
@@ -28,6 +28,10 @@ export default Vue.extend({
         allowExt: ["jpg", "png", "gif", "mp4", "txt"],
         maxSize: 5,
         delimiter: "|",
+        compress: false,
+        compressorOptions: {
+          quality: 0.2
+        }
       },
 
       config2: {

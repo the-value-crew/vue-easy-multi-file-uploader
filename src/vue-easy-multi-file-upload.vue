@@ -33,7 +33,13 @@
             <img v-if="files[index].type == 'image'" :src="files[index].url" />
 
             <!-- Video -->
-            <video v-else-if="files[index].type == 'video'" loop controls :src="files[index].url">
+            <video
+              v-else-if="files[index].type == 'video'"
+              loop
+              controls
+              playsinline
+              :src="files[index].url"
+            >
               <source :src="files[index].url" />
               Your browser does not support the video tag.
             </video>
@@ -45,7 +51,7 @@
           </template>
 
           <!-- Btn Delete -->
-          <div class="btnDelete">❌</div>
+          <div class="btnDelete" @click="deleteFile(index)">❌</div>
         </template>
 
         <!-- Label -->
@@ -57,6 +63,7 @@
 
 <script>
 import Vue from "vue";
+import Compressor from "compressorjs";
 
 const determineFileTypeByExt = (ext) => {
   const TYPES_DICT = {
@@ -109,6 +116,8 @@ export default {
         maxSize: null,
         delimiter: null,
         customValidator: null,
+        compress: false,
+        compressorOptions: null
       },
       files: null,
       activeIndex: null,
@@ -131,8 +140,9 @@ export default {
         if (this.files[index] && this.config.deleteUrl) return;
         this.activeIndex = index;
         this.$refs.fileInput.click();
-      } else this.deleteFile(index);
+      }
     },
+
     deleteFile(index) {
       if (confirm("Are you sure you want to delete?")) {
         if (!this.config.deleteUrl) {
@@ -162,46 +172,44 @@ export default {
           });
       }
     },
+
     update() {
-      let paths = this.files
-        // .filter((f) => (f ? true : false))
-        .map((f) => (f ? f.url : null));
+      // return uploaded file paths
+      let paths = this.files.map((f) => (f ? f.url : null));
       let valueToEmit = this.config_.delimiter
         ? paths.join(this.config_.delimiter)
         : paths;
       this.$emit("input", valueToEmit);
       this.$refs.fileInput.value = null; // clear fileInput
     },
+
     async handleFileChange(e) {
       let file = e.target.files.item(0);
-      // validate file
-      const { name: fileName, size: fileSize } = file;
-      let fileExt = fileName.split(".").pop();
-      if(fileExt) fileExt = fileExt.toLowerCase();
 
-      let error = null;
-      if (!this.config_.allowExt.includes(fileExt))
-        error = "file type not allowed";
-      else if (fileSize > this.config_.maxSize * 1024 * 1024)
-        error = "file size too large";
-      else if (this.config_.customValidator) {
-        try {
-          await this.config_.customValidator(file);
-        } catch (e) {
-          error = e.message;
-        }
-      }
-
+      let error = await this.validateFile(file);
       if (error) {
         alert(error);
         return;
       }
 
-      Vue.set(this.files, this.activeIndex, {
+      let fileData = {
         loading: true,
         url: null,
-        type: determineFileTypeByExt(fileExt),
-      });
+        type: determineFileTypeByExt(file.name.split(".").pop().toLowerCase()),
+      };
+
+      // Compress File
+      if (fileData.type === "image" && this.config_.compress) {
+        try {
+          let convertedFile = await this.compressImage(file);
+          file = new File([convertedFile], file.name);
+        } catch (e) {
+          console.log(e);
+        }
+      }
+
+      Vue.set(this.files, this.activeIndex, fileData);
+
       // upload file
       var formData = new FormData();
       formData.append(this.config_.uploadFieldName, file);
@@ -230,6 +238,7 @@ export default {
           this.update();
         });
     },
+
     processValueProp(val) {
       this.files = Array(this.config_.maxFiles);
       if (!val) return;
@@ -242,6 +251,40 @@ export default {
             loading: false,
             type: v ? determineFileTypeByExt(v.split(".").pop()) : "other",
           });
+      });
+    },
+
+    async validateFile(file) {
+      let error = null;
+
+      let allowExts = this.config_.allowExt;
+      let fileExt = file.name.split(".").pop().toLowerCase();
+      if (allowExts && allowExts.length && !allowExts.includes(fileExt))
+        error = "File type not allowed";
+      else if (file.size > this.config_.maxSize * 1024 * 1024)
+        error = "File size too large";
+      else if (this.config_.customValidator) {
+        try {
+          await this.config_.customValidator(file);
+        } catch (e) {
+          error = e.message;
+        }
+      }
+
+      return error;
+    },
+
+    async compressImage(file) {
+      return new Promise((resolve, reject) => {
+        new Compressor(file, {
+          ...this.config_.compressorOptions,
+          success(result) {
+            resolve(result);
+          },
+          error(err) {
+            reject(err.message);
+          },
+        });
       });
     },
   },
