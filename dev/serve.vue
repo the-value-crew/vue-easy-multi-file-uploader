@@ -31,7 +31,8 @@ export default Vue.extend({
         compress: false,
         compressorOptions: {
           quality: 0.2
-        }
+        },
+        // offline: true
       },
 
       config2: {
@@ -50,7 +51,7 @@ export default Vue.extend({
         delimiter: "|"
       },
 
-      values: "asdasd.sad",
+      values: null,
     };
   },
 });

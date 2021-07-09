@@ -22,19 +22,30 @@
           <!-- Upload Error -->
           <div
             class="message"
-            v-else-if="!files[index].loading && !files[index].url"
+            v-else-if="
+              !files[index].loading && !files[index].url && !files[index].file
+            "
           >
             Error uploading !!
           </div>
 
           <!-- File Types Preview -->
           <template v-if="files[index].url">
-            <!-- image -->
-            <img v-if="files[index].type == 'image'" :src="files[index].url" />
+            <!-- image (online) -->
+            <img
+              v-if="files[index].type == 'image' && config_.online"
+              :src="files[index].url"
+            />
 
-            <!-- Video -->
+            <!-- image (offline) -->
+            <img
+              v-if="files[index].type == 'image' && !config_.online"
+              :src="files[index].dataUrl"
+            />
+
+            <!-- Video(online) -->
             <video
-              v-else-if="files[index].type == 'video'"
+              v-else-if="files[index].type == 'video' && config_.online"
               loop
               controls
               playsinline
@@ -46,7 +57,12 @@
 
             <!-- Other -->
             <div class="message fileName" v-else>
-              {{ files[index].url.split("/").pop() }}
+              <span v-if="files[index].url">{{
+                files[index].url.split("/").pop()
+              }}</span>
+              <span v-else-if="files[index].file">{{
+                files[index].file.name
+              }}</span>
             </div>
           </template>
 
@@ -117,7 +133,8 @@ export default {
         delimiter: null,
         customValidator: null,
         compress: false,
-        compressorOptions: null
+        compressorOptions: null,
+        offline: false,
       },
       files: null,
       activeIndex: null,
@@ -174,18 +191,28 @@ export default {
     },
 
     update() {
-      // return uploaded file paths
-      let paths = this.files.map((f) => (f ? f.url : null));
-      let valueToEmit = this.config_.delimiter
-        ? paths.join(this.config_.delimiter)
-        : paths;
-      this.$emit("input", valueToEmit);
-      this.$refs.fileInput.value = null; // clear fileInput
+      // return raw file
+      if (this.config_.offline) {
+        this.$emit(
+          "input",
+          this.files.map((f) => f.file)
+        );
+        this.$refs.fileInput.value = null; // clear fileInput
+      } else {
+        // return uploaded file paths
+        let paths = this.files.map((f) => (f ? f.url : null));
+        let valueToEmit = this.config_.delimiter
+          ? paths.join(this.config_.delimiter)
+          : paths;
+        this.$emit("input", valueToEmit);
+        this.$refs.fileInput.value = null; // clear fileInput
+      }
     },
 
     async handleFileChange(e) {
       let file = e.target.files.item(0);
 
+      // validate
       let error = await this.validateFile(file);
       if (error) {
         alert(error);
@@ -206,6 +233,14 @@ export default {
         } catch (e) {
           console.log(e);
         }
+      }
+
+      // handle offline file
+      if (this.config_.offline) {
+        fileData.file = file;
+        Vue.set(this.files, this.activeIndex, fileData);
+        this.update();
+        return;
       }
 
       Vue.set(this.files, this.activeIndex, fileData);
@@ -245,12 +280,23 @@ export default {
 
       if (typeof val == "string") val = val.split(this.config_.delimiter);
       val.forEach((v, i) => {
-        if (v)
+        if (v) {
+          // determine file type
+          let type = "other";
+          let url = null;
+          if (v && typeof v == "string") {
+            type = determineFileTypeByExt(v.split(".").pop());
+            url = v;
+          } else url = v.name;
           Vue.set(this.files, i, {
-            url: v,
+            url,
             loading: false,
-            type: v ? determineFileTypeByExt(v.split(".").pop()) : "other",
+            type,
+            file: v,
           });
+
+          console.log(this.files);
+        }
       });
     },
 
